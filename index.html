@@ -406,11 +406,10 @@ import QRCode from 'https://cdn.jsdelivr.net/npm/qrcode@1.5.3/+esm';
       preview.innerHTML = '';
       const box = document.createElement('div');
       box.className = 'qr-box';
-      const c = canvas.cloneNode(true);
       // ensure display size not too huge
-      c.style.maxWidth = '100%';
-      c.style.height = 'auto';
-      box.appendChild(c);
+      canvas.style.maxWidth = '100%';
+      canvas.style.height = 'auto';
+      box.appendChild(canvas);
       preview.appendChild(box);
       const meta = document.createElement('div');
       meta.className = 'meta';
