@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Générateur de QR Code — Lien permanent</title>
+<meta name="description" content="Générez un QR code permanent pour n'importe quel lien. Téléchargez en PNG, SVG, PDF, JPEG. 100% côté client, sans expiration, sans redirection.">
+<meta name="theme-color" content="#0f172a">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0b1020;
+    --bg-2: #111833;
+    --card: #161e3a;
+    --card-2: #1c2647;
+    --border: #2a3560;
+    --text: #e8ecf7;
+    --muted: #9aa6c7;
+    --accent: #7c5cff;
+    --accent-2: #38d9a9;
+    --danger: #ff6b6b;
+    --radius: 14px;
+    --shadow: 0 20px 60px rgba(0,0,0,.45);
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font-family: 'Inter', system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+    background: radial-gradient(1200px 800px at 10% -10%, #1e2a5a 0%, transparent 60%),
+                radial-gradient(1000px 700px at 110% 10%, #2a1e5a 0%, transparent 60%),
+                var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    line-height: 1.5;
+  }
+  .wrap { max-width: 1100px; margin: 0 auto; padding: 32px 20px 60px; }
+  header { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 32px; flex-wrap: wrap; }
+  .brand { display: flex; align-items: center; gap: 12px; }
+  .logo { width: 40px; height: 40px; border-radius: 10px; background: linear-gradient(135deg, var(--accent), var(--accent-2)); display: grid; place-items: center; font-weight: 800; color: white; box-shadow: 0 8px 24px rgba(124,92,255,.4); }
+  .brand h1 { margin: 0; font-size: 20px; font-weight: 700; }
+  .brand p { margin: 0; color: var(--muted); font-size: 13px; }
+  .pill { display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 999px; background: rgba(56,217,169,.12); color: var(--accent-2); font-size: 12px; font-weight: 600; border: 1px solid rgba(56,217,169,.3); }
+  .hero { text-align: center; margin-bottom: 32px; }
+  .hero h2 { font-size: clamp(28px, 5vw, 46px); margin: 0 0 12px; font-weight: 800; letter-spacing: -0.02em; }
+  .hero h2 span { background: linear-gradient(135deg, var(--accent), var(--accent-2)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .hero p { color: var(--muted); max-width: 640px; margin: 0 auto; font-size: 17px; }
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+  @media (max-width: 860px) { .grid { grid-template-columns: 1fr; } }
+  .card { background: linear-gradient(180deg, var(--card), var(--card-2)); border: 1px solid var(--border); border-radius: var(--radius); padding: 24px; box-shadow: var(--shadow); }
+  .card h3 { margin: 0 0 16px; font-size: 16px; font-weight: 600; }
+  label { display: block; font-size: 13px; color: var(--muted); margin-bottom: 6px; font-weight: 500; }
+  input[type="text"], input[type="url"], select, input[type="number"], input[type="color"] {
+    width: 100%; padding: 11px 14px; border-radius: 10px; border: 1px solid var(--border);
+    background: #0d1328; color: var(--text); font-size: 15px; font-family: inherit; outline: none;
+    transition: border-color .15s, box-shadow .15s;
+  }
+  input:focus, select:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(124,92,255,.2); }
+  .row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .field { margin-bottom: 14px; }
+  .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 11px 16px; border-radius: 10px; border: 1px solid transparent; font-weight: 600; font-size: 14px; cursor: pointer; font-family: inherit; transition: transform .12s, box-shadow .12s, background .15s; }
+  .btn:active { transform: translateY(1px); }
+  .btn-primary { background: linear-gradient(135deg, var(--accent), #5a3fff); color: white; box-shadow: 0 8px 24px rgba(124,92,255,.35); }
+  .btn-primary:hover { box-shadow: 0 10px 28px rgba(124,92,255,.5); }
+  .btn-ghost { background: #0d1328; color: var(--text); border-color: var(--border); }
+  .btn-ghost:hover { border-color: var(--accent); }
+  .btn-success { background: linear-gradient(135deg, var(--accent-2), #22b07e); color: #062018; }
+  .actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 16px; }
+  .preview { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 320px; }
+  .qr-box { background: white; padding: 18px; border-radius: 12px; box-shadow: 0 12px 40px rgba(0,0,0,.35); display: inline-block; }
+  #qr-canvas { display: block; }
+  .meta { margin-top: 14px; color: var(--muted); font-size: 12px; text-align: center; word-break: break-all; max-width: 320px; }
+  .formats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 18px; }
+  .fmt { padding: 12px 8px; border-radius: 10px; background: #0d1328; border: 1px solid var(--border); color: var(--text); font-weight: 600; font-size: 13px; cursor: pointer; text-align: center; transition: border-color .15s, background .15s; }
+  .fmt:hover { border-color: var(--accent); background: #121a38; }
+  .fmt small { display: block; color: var(--muted); font-weight: 400; font-size: 11px; margin-top: 2px; }
+  .note { background: rgba(124,92,255,.08); border: 1px solid rgba(124,92,255,.25); border-radius: 10px; padding: 12px 14px; font-size: 13px; color: var(--muted); margin-top: 14px; }
+  .note strong { color: var(--text); }
+  footer { text-align: center; color: var(--muted); font-size: 12px; margin-top: 40px; }
+  .toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(20px); background: #1c2647; border: 1px solid var(--border); color: var(--text); padding: 12px 18px; border-radius: 10px; font-size: 14px; opacity: 0; pointer-events: none; transition: opacity .2s, transform .2s; box-shadow: var(--shadow); z-index: 50; }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+  .tabs { display: flex; gap: 4px; background: #0d1328; padding: 4px; border-radius: 10px; border: 1px solid var(--border); margin-bottom: 16px; }
+  .tab { flex: 1; padding: 8px; text-align: center; border-radius: 8px; cursor: pointer; font-size: 13px; color: var(--muted); font-weight: 500; }
+  .tab.active { background: var(--card); color: var(--text); }
+  .panel { display: none; }
+  .panel.active { display: block; }
+  .color-row { display: flex; gap: 10px; }
+  .color-row > div { flex: 1; }
+  input[type="color"] { height: 42px; padding: 4px; cursor: pointer; }
+  .slider { -webkit-appearance: none; appearance: none; width: 100%; height: 6px; border-radius: 3px; background: #0d1328; outline: none; }
+  .slider::-webkit-slider-thumb { -webkit-appearance: none; width: 18px; height: 18px; border-radius: 50%; background: var(--accent); cursor: pointer; }
+  .slider::-moz-range-thumb { width: 18px; height: 18px; border-radius: 50%; background: var(--accent); cursor: pointer; border: none; }
+  .val { color: var(--muted); font-size: 12px; text-align: right; margin-top: 4px; }
+  .presets { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+  .preset { padding: 6px 10px; border-radius: 8px; background: #0d1328; border: 1px solid var(--border); color: var(--muted); font-size: 12px; cursor: pointer; }
+  .preset:hover { border-color: var(--accent); color: var(--text); }
+  .empty { color: var(--muted); text-align: center; padding: 40px 0; }
+  .empty .icon { font-size: 48px; margin-bottom: 8px; opacity: .5; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="brand">
+      <div class="logo">QR</div>
+      <div>
+        <h1>QR Permanent</h1>
+        <p>Générateur de QR code sans expiration</p>
+      </div>
+    </div>
+    <span class="pill">● 100% côté client</span>
+  </header>
+
+  <section class="hero">
+    <h2>Un lien, un QR code <span>pour toujours</span></h2>
+    <p>Entrez n'importe quelle URL. Le QR code encode le lien directement : pas de redirection, pas de serveur intermédiaire, pas d'expiration. Téléchargez en PNG, SVG, PDF ou JPEG.</p>
+  </section>
+
+  <div class="grid">
+    <div class="card">
+      <h3>① Votre lien</h3>
+      <div class="field">
+        <label for="url">URL à encoder</label>
+        <input type="url" id="url" placeholder="https://example.com/ma-page" autocomplete="off">
+      </div>
+
+      <div class="tabs" style="margin-top:18px;">
+        <div class="tab active" data-tab="design">Design</div>
+        <div class="tab" data-tab="advanced">Avancé</div>
+      </div>
+
+      <div class="panel active" id="panel-design">
+        <div class="color-row">
+          <div class="field">
+            <label>Couleur du QR</label>
+            <input type="color" id="fg" value="#0f172a">
+          </div>
+          <div class="field">
+            <label>Fond</label>
+            <input type="color" id="bg" value="#ffffff">
+          </div>
+        </div>
+        <div class="field">
+          <label>Taille (px)</label>
+          <input type="range" class="slider" id="size" min="128" max="1024" step="32" value="320">
+          <div class="val" id="size-val">320 px</div>
+        </div>
+        <div class="field">
+          <label>Marge (modules)</label>
+          <input type="range" class="slider" id="margin" min="0" max="8" step="1" value="2">
+          <div class="val" id="margin-val">2</div>
+        </div>
+      </div>
+
+      <div class="panel" id="panel-advanced">
+        <div class="field">
+          <label>Forme des points</label>
+          <select id="dotstyle">
+            <option value="square" selected>Carrés</option>
+            <option value="rounded">Arrondis</option>
+            <option value="dots">Points</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Nom du fichier</label>
+          <input type="text" id="filename" value="qr-code" placeholder="qr-code">
+        </div>
+      </div>
+
+      <div class="actions">
+        <button class="btn btn-primary" id="generate">Générer</button>
+        <button class="btn btn-ghost" id="clear">Effacer</button>
+      </div>
+
+      <div class="note">
+        <strong>Permanent :</strong> le QR code contient votre URL telle quelle. Aucun serveur intermédiaire, aucune redirection, aucune date d'expiration. Tant que l'URL existe, le QR fonctionne.
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>② Aperçu & téléchargement</h3>
+      <div class="preview" id="preview">
+        <div class="empty">
+          <div class="icon">  </div>
+          <div>Entrez un lien puis cliquez sur Générer</div>
+        </div>
+      </div>
+      <div class="formats" id="formats" style="display:none;">
+        <button class="fmt" data-fmt="png">PNG<small>Image raster</small></button>
+        <button class="fmt" data-fmt="jpeg">JPEG<small>Photo</small></button>
+        <button class="fmt" data-fmt="webp">WebP<small>Web moderne</small></button>
+        <button class="fmt" data-fmt="svg">SVG<small>Vectoriel</small></button>
+        <button class="fmt" data-fmt="pdf">PDF<small>Document</small></button>
+        <button class="fmt" data-fmt="copy">Copier<small>Presse-papiers</small></button>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    Générateur de QR code permanent · 100% local, aucune donnée envoyée · Hébergeable sur GitHub Pages
+  </footer>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<!-- jsPDF -->
+<script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+
+<script type="module">
+import QRCode from 'https://cdn.jsdelivr.net/npm/qrcode@1.5.3/+esm';
+
+(function() {
+  const $ = (id) => document.getElementById(id);
+  const urlInput = $('url');
+  const fgInput = $('fg');
+  const bgInput = $('bg');
+  const sizeInput = $('size');
+  const marginInput = $('margin');
+  const dotStyleInput = $('dotstyle');
+  const filenameInput = $('filename');
+  const preview = $('preview');
+  const formats = $('formats');
+  const toast = $('toast');
+
+  let currentCanvas = null;
+  let currentSvg = null;
+  let currentUrl = '';
+
+  function showToast(msg) {
+    toast.textContent = msg;
+    toast.classList.add('show');
+    clearTimeout(showToast._t);
+    showToast._t = setTimeout(() => toast.classList.remove('show'), 2200);
+  }
+
+  // Tabs
+  document.querySelectorAll('.tab').forEach(t => {
+    t.addEventListener('click', () => {
+      document.querySelectorAll('.tab').forEach(x => x.classList.remove('active'));
+      document.querySelectorAll('.panel').forEach(x => x.classList.remove('active'));
+      t.classList.add('active');
+      $('panel-' + t.dataset.tab).classList.add('active');
+    });
+  });
+
+  sizeInput.addEventListener('input', () => $('size-val').textContent = sizeInput.value + ' px');
+  marginInput.addEventListener('input', () => $('margin-val').textContent = marginInput.value);
+
+  // Auto-generate on input (debounced) so the preview appears automatically
+  let debounceTimer = null;
+  urlInput.addEventListener('input', () => {
+    clearTimeout(debounceTimer);
+    debounceTimer = setTimeout(() => {
+      if (urlInput.value.trim()) generate();
+    }, 400);
+  });
+
+  function normalizeUrl(v) {
+    v = (v || '').trim();
+    if (!v) return '';
+    // Allow non-http schemes like mailto:, tel:, whatsapp etc.
+    if (/^[a-z][a-z0-9+.-]*:/i.test(v)) return v;
+    // If looks like domain without scheme, add https
+    if (/^[\w.-]+\.[a-z]{2,}/i.test(v)) return 'https://' + v;
+    return v;
+  }
+
+  function buildOptions() {
+    const size = parseInt(sizeInput.value, 10);
+    const margin = parseInt(marginInput.value, 10);
+    const ecc = 'M';
+    const fg = fgInput.value;
+    const bg = bgInput.value;
+    const dotStyle = dotStyleInput.value;
+
+    const opts = {
+      width: size,
+      margin: margin,
+      color: { dark: fg, light: bg },
+      errorCorrectionLevel: ecc
+    };
+
+    // dot style handling via renderer (custom) — QRCode lib supports type only; we post-process for rounded/dots via canvas redraw is complex.
+    // We'll store dotStyle for filename only; standard square modules. For rounded/dots we use a custom draw.
+    opts._dotStyle = dotStyle;
+    return opts;
+  }
+
+  async function generateSVG(text, opts) {
+    // Manual SVG generation supporting dot styles
+    const qr = QRCode.create(text, { errorCorrectionLevel: opts.errorCorrectionLevel });
+    const modules = qr.modules;
+    const n = modules.size;
+    const margin = opts.margin;
+    const total = n + margin * 2;
+    const cell = 10; // base unit in SVG user units
+    const size = total * cell;
+    const fg = opts.color.dark;
+    const bg = opts.color.light;
+    const dotStyle = opts._dotStyle || 'square';
+    let shapes = '';
+    const r = dotStyle === 'dots' ? cell * 0.42 : (dotStyle === 'rounded' ? cell * 0.22 : 0);
+    for (let row = 0; row < n; row++) {
+      for (let col = 0; col < n; col++) {
+        const idx = row * n + col;
+        const on = modules.data ? modules.data[idx] : 0;
+        if (on) {
+          const x = (margin + col) * cell;
+          const y = (margin + row) * cell;
+          if (dotStyle === 'dots') {
+            shapes += `<circle cx="${x + cell/2}" cy="${y + cell/2}" r="${r}" fill="${fg}"/>`;
+          } else if (dotStyle === 'rounded') {
+            shapes += `<rect x="${x + 0.5}" y="${y + 0.5}" width="${cell - 1}" height="${cell - 1}" rx="${r}" ry="${r}" fill="${fg}"/>`;
+          } else {
+            shapes += `<rect x="${x}" y="${y}" width="${cell}" height="${cell}" fill="${fg}"/>`;
+          }
+        }
+      }
+    }
+    const svg = `<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 ${size} ${size}" shape-rendering="crispEdges">
+  <rect width="100%" height="100%" fill="${bg}"/>
+  ${shapes}
+</svg>`;
+    return svg;
+  }
+
+  async function generateCanvas(text, opts) {
+    const canvas = document.createElement('canvas');
+    const qOpts = {
+      width: opts.width,
+      margin: opts.margin,
+      color: opts.color,
+      errorCorrectionLevel: opts.errorCorrectionLevel
+    };
+    await QRCode.toCanvas(canvas, text, qOpts);
+    // Apply dot style if needed
+    if (opts._dotStyle && opts._dotStyle !== 'square') {
+      await redrawDots(canvas, text, opts);
+    }
+    return canvas;
+  }
+
+  // Redraw modules with rounded/dot shapes
+  async function redrawDots(canvas, text, opts) {
+    // Re-extract module matrix using QRCode create
+    const qr = QRCode.create(text, { errorCorrectionLevel: opts.errorCorrectionLevel });
+    const modules = qr.modules;
+    const n = modules.size;
+    const margin = opts.margin;
+    const cell = opts.width / (n + margin * 2);
+    const offset = margin * cell;
+    const ctx = canvas.getContext('2d');
+    ctx.fillStyle = opts.color.light;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = opts.color.dark;
+    const r = opts._dotStyle === 'dots' ? cell * 0.42 : cell * 0.22;
+    for (let row = 0; row < n; row++) {
+      for (let col = 0; col < n; col++) {
+        const idx = row * n + col;
+        const on = modules.data ? modules.data[idx] : modules.get(row, col);
+        if (on) {
+          const x = offset + col * cell;
+          const y = offset + row * cell;
+          if (opts._dotStyle === 'dots') {
+            ctx.beginPath();
+            ctx.arc(x + cell/2, y + cell/2, r, 0, Math.PI*2);
+            ctx.fill();
+          } else {
+            const radius = r;
+            roundRect(ctx, x + 0.5, y + 0.5, cell - 1, cell - 1, radius);
+            ctx.fill();
+          }
+        }
+      }
+    }
+  }
+
+  function roundRect(ctx, x, y, w, h, r) {
+    ctx.beginPath();
+    ctx.moveTo(x + r, y);
+    ctx.arcTo(x + w, y, x + w, y + h, r);
+    ctx.arcTo(x + w, y + h, x, y + h, r);
+    ctx.arcTo(x, y + h, x, y, r);
+    ctx.arcTo(x, y, x + w, y, r);
+    ctx.closePath();
+  }
+
+  async function generate() {
+    const raw = urlInput.value;
+    const text = normalizeUrl(raw);
+    if (!text) {
+      showToast('Entrez un lien d\'abord');
+      return;
+    }
+    currentUrl = text;
+    const opts = buildOptions();
+    try {
+      const canvas = await generateCanvas(text, opts);
+      currentCanvas = canvas;
+      // Also generate SVG (standard) for download
+      const svg = await generateSVG(text, opts);
+      currentSvg = svg;
+
+      preview.innerHTML = '';
+      const box = document.createElement('div');
+      box.className = 'qr-box';
+      const c = canvas.cloneNode(true);
+      // ensure display size not too huge
+      c.style.maxWidth = '100%';
+      c.style.height = 'auto';
+      box.appendChild(c);
+      preview.appendChild(box);
+      const meta = document.createElement('div');
+      meta.className = 'meta';
+      meta.textContent = text.length > 60 ? text.slice(0,60) + '…' : text;
+      preview.appendChild(meta);
+
+      formats.style.display = 'grid';
+    } catch (e) {
+      console.error(e);
+      showToast('Erreur : ' + (e.message || e));
+    }
+  }
+
+  function filename() {
+    let n = (filenameInput.value || 'qr-code').trim();
+    if (!n) n = 'qr-code';
+    // sanitize
+    n = n.replace(/[^a-zA-Z0-9._-]/g, '_');
+    return n;
+  }
+
+  function downloadBlob(blob, name) {
+    const a = document.createElement('a');
+    const u = URL.createObjectURL(blob);
+    a.href = u;
+    a.download = name;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(() => URL.revokeObjectURL(u), 1000);
+  }
+
+  async function handleFormat(fmt) {
+    if (!currentCanvas || !currentUrl) {
+      showToast('Générez d\'abord un QR code');
+      return;
+    }
+    const name = filename();
+    try {
+      if (fmt === 'png') {
+        currentCanvas.toBlob(b => downloadBlob(b, name + '.png'), 'image/png');
+        showToast('PNG téléchargé');
+      } else if (fmt === 'jpeg') {
+        currentCanvas.toBlob(b => downloadBlob(b, name + '.jpg'), 'image/jpeg', 0.95);
+        showToast('JPEG téléchargé');
+      } else if (fmt === 'webp') {
+        currentCanvas.toBlob(b => downloadBlob(b, name + '.webp'), 'image/webp', 0.95);
+        showToast('WebP téléchargé');
+      } else if (fmt === 'svg') {
+        // regenerate svg with dot style? standard svg square; for consistency use currentSvg
+        const blob = new Blob([currentSvg], { type: 'image/svg+xml' });
+        downloadBlob(blob, name + '.svg');
+        showToast('SVG téléchargé');
+      } else if (fmt === 'pdf') {
+        const { jsPDF } = window.jspdf;
+        const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+        const img = currentCanvas.toDataURL('image/png');
+        const pageW = pdf.internal.pageSize.getWidth();
+        const size = 120;
+        const x = (pageW - size) / 2;
+        pdf.setFontSize(16);
+        pdf.text('QR Code', pageW/2, 30, { align: 'center' });
+        pdf.addImage(img, 'PNG', x, 45, size, size);
+        pdf.setFontSize(10);
+        pdf.text(currentUrl, pageW/2, 175, { align: 'center', maxWidth: pageW - 40 });
+        pdf.save(name + '.pdf');
+        showToast('PDF téléchargé');
+      } else if (fmt === 'copy') {
+        try {
+          const blob = await new Promise(res => currentCanvas.toBlob(res, 'image/png'));
+          await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]);
+          showToast('Copié dans le presse-papiers');
+        } catch (e) {
+          showToast('Copie non supportée par ce navigateur');
+        }
+      }
+    } catch (e) {
+      console.error(e);
+      showToast('Erreur : ' + (e.message || e));
+    }
+  }
+
+  document.querySelectorAll('.fmt').forEach(b => {
+    b.addEventListener('click', () => handleFormat(b.dataset.fmt));
+  });
+
+  $('generate').addEventListener('click', generate);
+  $('clear').addEventListener('click', () => {
+    urlInput.value = '';
+    preview.innerHTML = '<div class="empty"><div class="icon">  </div><div>Entrez un lien puis cliquez sur Générer</div></div>';
+    formats.style.display = 'none';
+    currentCanvas = null; currentSvg = null; currentUrl = '';
+  });
+
+  // Enter key
+  urlInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') generate();
+  });
+
+  // Auto-generate on paste? no, wait for click. But generate initial if url param present
+  const params = new URLSearchParams(location.search);
+  if (params.get('url')) {
+    urlInput.value = params.get('url');
+    generate();
+  }
+})();
+</script>
+</body>
+</html>
